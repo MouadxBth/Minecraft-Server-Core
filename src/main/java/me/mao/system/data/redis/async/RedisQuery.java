@@ -3,28 +3,34 @@ package me.mao.system.data.redis.async;
 import me.mao.system.data.Callback;
 import me.mao.system.data.redis.RedisAcces;
 import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
+import org.redisson.client.RedisClient;
 
 public class RedisQuery implements Runnable {
 
-    private RedisAcces redisAcces;
+    private RedissonClient redisClient;
     private String key;
-    private Object value;
     private RBucket<Object> bucket;
-    private Callback<RBucket<?>, Exception> callback;
+    private Callback<RBucket<Object>, Exception> callback;
 
     private boolean exists;
 
 
-    public RedisQuery(RedisAcces redisAcces, String key, Object value, Callback<RBucket<?>, Exception> callback) {
-        this.redisAcces = redisAcces;
+    public RedisQuery(RedisAcces redisAcces, String key, Callback<RBucket<Object>, Exception> callback) {
+        this.redisClient = redisAcces.getRedissonClient();
         this.key = key;
-        this.value = value;
+        this.callback = callback;
+    }
+
+    public RedisQuery(RedissonClient redisClient, String key,Callback<RBucket<Object>, Exception> callback) {
+        this.redisClient = redisClient;
+        this.key = key;
         this.callback = callback;
     }
 
     @Override
     public void run() {
-        bucket = redisAcces.getRedissonClient().getBucket(key);
+        bucket = redisClient.getBucket(key);
 
         if((!bucket.isExists()) || bucket == null) {
             exists = false;
@@ -44,9 +50,6 @@ public class RedisQuery implements Runnable {
         return key;
     }
 
-    public Object getValue() {
-        return value;
-    }
 
     public RBucket<Object> getBucket() {
         return bucket;
@@ -56,15 +59,16 @@ public class RedisQuery implements Runnable {
         return exists;
     }
 
-    public void setRedisAcces(RedisAcces redisAcces) {
-        this.redisAcces = redisAcces;
+    public void setRedisClient(RedisAcces redisAcces) {
+        this.redisClient = redisAcces.getRedissonClient();
+    }
+
+    public void setRedisClient(RedissonClient redisClient) {
+        this.redisClient = redisClient;
     }
 
     public void setKey(String key) {
         this.key = key;
     }
 
-    public void setValue(Object value) {
-        this.value = value;
-    }
 }

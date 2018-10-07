@@ -4,18 +4,19 @@ package me.mao.system.data.redis.async;
 import me.mao.system.data.Callback;
 import me.mao.system.data.redis.RedisAcces;
 import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
 
 public class RedisUpdate implements Runnable {
 
-    private RedisAcces redisAcces;
+    private RedissonClient client;
     private String key;
     private Object value;
     private RBucket<Object> bucket;
     private Callback<RBucket<?>, Exception> callback;
 
 
-    public RedisUpdate(RedisAcces redisAcces, String key, Object value, Callback<RBucket<?>, Exception> callback) {
-        this.redisAcces = redisAcces;
+    public RedisUpdate(RedissonClient client, String key, Object value, Callback<RBucket<?>, Exception> callback) {
+        this.client = client;
         this.key = key;
         this.value = value;
         this.callback = callback;
@@ -23,7 +24,7 @@ public class RedisUpdate implements Runnable {
 
     @Override
     public void run() {
-        bucket = redisAcces.getRedissonClient().getBucket(key);
+        bucket = client.getBucket(key);
         if(bucket == null) {
             try {
                 throw new Exception("Could not find a redis object with the key: " + key);
@@ -49,8 +50,8 @@ public class RedisUpdate implements Runnable {
         return bucket;
     }
 
-    public void setRedisAcces(RedisAcces redisAcces) {
-        this.redisAcces = redisAcces;
+    public void setRedissonClient(RedissonClient client) {
+        this.client = client;
     }
 
     public void setKey(String key) {

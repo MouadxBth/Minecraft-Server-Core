@@ -11,13 +11,12 @@ import java.sql.SQLException;
 public class Update implements Runnable {
 
     private PreparedStatement preparedStatement;
-    private MySQLAcces acces;
     private Callback<Integer, SQLException> callback;
-    private Connection connection = acces.getConnection();
+    private Connection connection;
 
-    public Update(PreparedStatement statement, MySQLAcces acces, Callback<Integer, SQLException> callback) {
+    public Update(PreparedStatement statement, Connection connection, Callback<Integer, SQLException> callback) {
         this.preparedStatement = statement;
-        this.acces = acces;
+        this.connection = connection;
         this.callback = callback;
     }
 
